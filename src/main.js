@@ -1,4 +1,4 @@
-var $ = require("jquery");
+if(!$) $ = require("jquery");
 
 var firstRow = 1;
 var firstCol = 1;
