@@ -49,12 +49,24 @@ function main() {
 
   $(document).on("keydown", (e) => {
     console.log(e.which);
-    if(e.which === 40) scroll_down();
-    else if(e.which === 38) scroll_up();
-    else if(e.which === 37) scroll_left();
-    else if(e.which === 39) scroll_right();
-    else if(e.which === 13) validate(selection.i, selection.j);
-    else if(selection) edit(selection.i, selection.j);
+    if(e.ctrlKey) {
+      if(e.which === 40) scroll_down();
+      else if(e.which === 38) scroll_up();
+      else if(e.which === 37) scroll_left();
+      else if(e.which === 39) scroll_right();
+    }
+    else {
+      if(e.which === 40) down();
+      else if(e.which === 38) up();
+      else if(e.which === 37) left();
+      else if(e.which === 39) right();
+      else if(e.which === 13) {
+        validate(selection.i, selection.j);
+        down();
+      }
+      else if(e.which === 27) cancelEdit(selection.i, selection.j);
+      else if(selection) edit(selection.i, selection.j);
+    }
   });
 
 }
@@ -89,7 +101,6 @@ function loadCell(e, i, j) {
 //////////////////
 
 function get(i,j) {
-  return i;
   if(!data[i]) return null;
   return data[i][j];
 }
@@ -188,26 +199,59 @@ function select(i,j) {
   selection = {i:i,j:j};
   loadCell(cell(i,j), i,j);
   if(oldSelection) {
-    loadCell(cell(oldSelection.i, oldSelection.j), oldSelection.i, oldSelection.j);
-    unedit(oldSelection.i, oldSelection.j);
+    validate(oldSelection.i, oldSelection.j);
+    loadCell(cell(oldSelection.i,oldSelection.j),oldSelection.i,oldSelection.j);
   }
 }
+
+function down() {
+    if(!selection) return;
+    // TODO SCROLL IF LAST VISIBLE ROW -> calculate last visible row !
+    if(selection.i>=firstRow+rows-1) scroll_down();
+    select(selection.i+1,selection.j);
+}
+
+function up() {
+    if(!selection) return;
+    if(selection.i<=1) return;
+    if(selection.i<=firstRow) scroll_up();
+    select(selection.i-1,selection.j);
+}
+
+function left() {
+    if(!selection) return;
+    if(selection.j<=1) return;
+    if(selection.j<=firstCol) scroll_left();
+    select(selection.i,selection.j-1);
+}
+
+function right() {
+    if(!selection) return;
+    // TODO SCROLL IF LAST VISIBLE COL -> calculate last visible col !
+    if(selection.j>=firstCol+cols) scroll_right();
+    select(selection.i,selection.j+1);
+}
+
 
 ///////////////////////
 
 function edit(i,j) {
-  cell(i,j).children().attr("contentEditable", true).focus();
+  cell(i,j).attr("contentEditable", true).focus();
 }
 
 function unedit(i,j) {
-  cell(i,j).children().attr("contentEditable", false).blur();
+  cell(i,j).attr("contentEditable", false).blur();
 }
 
 function validate(i,j) {
-  set(i,j,cell(i,j).children().html());
-  cell(i,j).children().attr("contentEditable", false).blur();
+  set(i,j,cell(i,j).html());
+  cell(i,j).attr("contentEditable", false).blur();
 }
 
+function cancelEdit(i,j) {
+  unedit(i,j);
+  loadCell(cell(i,j),i,j);
+}
 
 ///////////////////
 
