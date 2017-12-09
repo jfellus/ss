@@ -18,7 +18,7 @@ function create_grid(h,w) {
   for(var i=0; i<w; i++) {
     var r = $("<div class='tc'></div>");
     r.append("<div class='colHeader'>"+(i==0 ? "" : i)+"</div>")
-    for(var j=1; j<w; j++) {
+    for(var j=1; j<h; j++) {
       if(i==0) r.append("<div class='rowHeader'>"+(j==0 ? "" : j)+"</div>");
       else r.append($("<div class='cell'></div>").click(handleClick));
     }
@@ -64,18 +64,18 @@ function main() {
 
 
 function loadCols(i1, i2) {
-  var e = $(t.children()[i1-firstCol+1]);
+  var e = $(t.children()[i1]);
   for(var i=i1; i<=i2; i++) {
-    loadCol(e, i);
+    loadCol(e, i+firstCol-1);
     e = e.next();
   }
 }
 
 
-function loadCol(e, i) {
-  e.children().each((j,c) => {
-    if(j==0) $(c).html(i);
-    else loadCell($(c),i,j+firstCol-1);
+function loadCol(e, j) {
+  e.children().each((i,r) => {
+    if(i==0) $(r).html(j);
+    else loadCell($(r),i+firstRow-1,j);
   })
 }
 
@@ -89,6 +89,7 @@ function loadCell(e, i, j) {
 //////////////////
 
 function get(i,j) {
+  return i;
   if(!data[i]) return null;
   return data[i][j];
 }
@@ -114,6 +115,10 @@ function row_cells(i) {
   return t.children().children(":nth-child("+(i-firstRow+2)+")");
 }
 
+function col_cells(j) {
+  return t.children(":nth-child("+(j-firstCol+2)+")").children();
+}
+
 ///////////////////
 
 function isSelected(i,j) {
@@ -136,30 +141,30 @@ function scroll_right() {
   firstCol++;
   var x = $(t.children()[1]);
   x.detach();
-  loadCol(x, firstCol+cols);
+  loadCol(x, firstCol+cols-2);
   t.append(x);
 }
 
 function scroll_down() {
   firstRow++;
-  t.children().each((i,r) => {
-    var x = $($(r).children()[1]);
+  t.children().each((j,c) => {
+    var x = $($(c).children()[1]);
     x.detach();
-    if(i==0) x.html(firstRow+rows-2);
-    else loadCell(x, firstRow+i-1, firstCol+cols);
-    $(r).append(x);
+    if(j==0) x.html(firstRow+rows-2);
+    else loadCell(x, firstRow+rows-2, firstCol+j-1);
+    $(c).append(x);
   });
 }
 
 function scroll_up() {
   if(firstRow<=1) return;
   firstRow--;
-  t.children().each((i,r) => {
-    var x = $(r).children().last();
+  t.children().each((j,c) => {
+    var x = $(c).children().last();
     x.detach();
-    if(i==0) x.html(firstRow);
-    else loadCell(x, firstRow+i-1, firstCol);
-    $(r).children().first().after(x);
+    if(j==0) x.html(firstRow);
+    else loadCell(x, firstRow, firstCol+j-1);
+    $(c).children().first().after(x);
   });
 }
 
